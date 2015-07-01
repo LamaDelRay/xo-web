@@ -29,6 +29,8 @@ export default angular.module('scheduler.rollingSnapshot', [
   })
   .controller('RollingSnapshotCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
     this.comesForEditing = $stateParams.id
+    this.scheduleApi = {}
+    this.formData = {}
 
     this.selectMinute = function (minute) {
       if (this.isSelectedMinute(minute)) {
@@ -270,7 +272,7 @@ export default angular.module('scheduler.rollingSnapshot', [
       }
     }
 
-    this.toggleAllRunning = (toggle) => toggleState(toggle, 'Running')
+    this.toggleAllRunning = toggle => toggleState(toggle, 'Running')
     this.toggleAllHalted = toggle => toggleState(toggle, 'Halted')
 
     this.edit = schedule => {
@@ -285,15 +287,13 @@ export default angular.module('scheduler.rollingSnapshot', [
       const depth = job.paramsVector.items[0].values[0].depth
       const cronPattern = schedule.cron
 
-      this.resetFormData()
-      const formData = this.formData
-      formData.selectedVms = selectedVms
-      formData.tag = tag
-      formData.depth = depth
-      formData.scheduleId = schedule.id
-      cronToFormData(formData, cronPattern)
-      this.formData = formData
-      this.update()
+      this.scheduleApi.resetData()
+      // const formData = this.formData
+      this.formData.selectedVms = selectedVms
+      this.formData.tag = tag
+      this.formData.depth = depth
+      this.formData.scheduleId = schedule.id
+      this.scheduleApi.setCron(cronPattern)
     }
 
     this.save = (id, vms, tag, depth, cron, enabled) => {
@@ -311,8 +311,7 @@ export default angular.module('scheduler.rollingSnapshot', [
           title: 'Rolling snapshot',
           message: 'Job schedule successfuly saved'
         })
-        this.resetFormData()
-        this.update()
+        this.scheduleApi.resetData()
       })
       .finally(() => {
         refreshJobs()
@@ -468,8 +467,6 @@ export default angular.module('scheduler.rollingSnapshot', [
     if (!this.comesForEditing) {
       refreshSchedules()
       refreshJobs()
-      this.resetFormData()
-      this.update()
     } else {
       refreshJobs()
       .then(() => refreshSchedules())

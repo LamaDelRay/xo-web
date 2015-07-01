@@ -60,7 +60,8 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
         |  Schedule
       .panel-body.form-horizontal
         .text-center(ng-if = '!ctrl.formData'): i.fa.fa-circle-o-notch.fa-spin.fa-2x
-        accordion(ng-if = 'ctrl.formData', close-others= 'false', ng-click = 'ctrl.update()')
+        xo-scheduler(data = 'ctrl.formData', api = 'ctrl.scheduleApi')
+        //- accordion(ng-if = 'ctrl.formData', close-others= 'false', ng-click = 'ctrl.update()')
           accordion-group
             accordion-heading Month
             tabset
@@ -150,28 +151,28 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                 table.table.table-bordered
                   tr(ng-repeat = 'line in ctrl.minutes')
                     td(ng-click = 'ctrl.selectMinute(min)', ng-class = '{"bg-success": ctrl.isSelectedMinute(min)}',ng-repeat = 'min in line') {{ min }}
-        input.form-control.hidden(type ='text', readonly, ng-model = 'ctrl.formData.cronPattern')
-  //- Summary
-  .grid
-    .panel.panel-default
-      .panel-heading.panel-title
-        i.fa.fa-flag-checkered(style="color: #e25440;")
-        |  Summary
-      .panel-body
-        .text-center(ng-if = '!ctrl.formData'): i.fa.fa-circle-o-notch.fa-spin.fa-2x
-        div(ng-if = 'ctrl.formData')
+        //- input.form-control.hidden(type ='text', readonly, ng-model = 'ctrl.formData.cronPattern')
+        //- .text-center(ng-if = '!ctrl.formData'): i.fa.fa-circle-o-notch.fa-spin.fa-2x
+        //- div(ng-if = 'ctrl.formData')
           p
             //- | {{ schAction.info.actionName }}&nbsp;
             strong Scheduled to run:&nbsp;
             | {{ ctrl.prettyCron(ctrl.formData.cronPattern) }}
-          .form-inline
-            .form-group
-              label Preview:&nbsp;
-              input.form-control(type = 'range', min = '0', max = '{{ ctrl.formData.summary.length - 3 }}', step = '1', ng-model = 'ctrl.formData.previewLimit')
+            .form-inline.container
+              .form-group
+                label Preview:&nbsp;
+                input.form-control(type = 'range', min = '0', max = '{{ ctrl.formData.summary.length - 3 }}', step = '1', ng-model = 'ctrl.formData.previewLimit')
           br
           ul
             li(ng-repeat = 'occurence in ctrl.formData.summary | limitTo: +ctrl.formData.previewLimit+3') {{ occurence }}
             li ...
+  //- Summary
+  .grid
+    .panel.panel-default
+      //- .panel-heading.panel-title
+        i.fa.fa-flag-checkered(style="color: #e25440;")
+        |  Summary
+      .panel-body
           p.center
             button.btn.btn-lg.btn-primary(type = 'submit')
               i.fa.fa-clock-o
@@ -181,7 +182,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
               i.fa.fa-database
               | &nbsp;Save&nbsp;
             | &nbsp;
-            button.btn.btn-lg.btn-default(type = 'button', ng-click = 'ctrl.resetFormData();ctrl.update()')
+            button.btn.btn-lg.btn-default(type = 'button', ng-click = 'ctrl.scheduleApi.resetData()')
               | &nbsp;Reset&nbsp;
 .grid
     .panel.panel-default
