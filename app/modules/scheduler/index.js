@@ -213,13 +213,6 @@ export default angular.module('scheduler', [
       this.data.dayWeek = 'all'
       this.data.cronPattern = '* * * * *'
       this.data.summary = []
-      this.data.allRunning = false
-      this.data.allHalted = false
-      this.data.selectedVms = []
-      this.data.scheduleId = undefined
-      this.data.tag = undefined
-      this.data.depth = undefined
-      this.data.enabled = false
       this.data.previewLimit = 0
 
       this.update()

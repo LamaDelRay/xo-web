@@ -1,12 +1,7 @@
 import angular from 'angular'
-import assign from 'lodash.assign'
 import find from 'lodash.find'
 import forEach from 'lodash.foreach'
-import indexOf from 'lodash.indexof'
-import later from 'later'
-import moment from 'moment'
 import prettyCron from 'prettycron'
-import remove from 'lodash.remove'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
 
@@ -20,58 +15,208 @@ export default angular.module('scheduler.backup', [
 ])
   .config(function ($stateProvider) {
     $stateProvider.state('scheduler.backup', {
-      url: '/backup',
+      url: '/backup/:id',
       controller: 'BackupCtrl as ctrl',
       template: view
     })
   })
   .controller('BackupCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
+    const JOBKEY = 'rollingBackup'
+
+    this.comesForEditing = $stateParams.id
+    this.scheduleApi = {}
+    this.formData = {}
+
     const refreshSchedules = () => {
-      xo.schedule.getAll()
+      return xo.schedule.getAll()
       .then(schedules => {
         const s = {}
-        forEach(schedules, schedule => s[schedule.id] = schedule)
+        forEach(schedules, schedule => {
+          this.jobs && this.jobs[schedule.job] && this.jobs[schedule.job].key === JOBKEY && (s[schedule.id] = schedule)
+        })
         this.schedules = s
       })
-      xo.scheduler.getScheduleTable()
-      .then(table => this.scheduleTable = table)
     }
 
-    this.prettyCron = prettyCron.toString.bind(prettyCron)
-
     const refreshJobs = () => {
-      xo.job.getAll()
+      return xo.job.getAll()
       .then(jobs => {
         const j = {}
         forEach(jobs, job => j[job.id] = job)
         this.jobs = j
       })
     }
-    refreshSchedules()
-    refreshJobs()
+
+    const refresh = () => {
+      return refreshJobs().then(refreshSchedules)
+    }
 
     const interval = $interval(() => {
-      refreshSchedules()
-      refreshJobs()
+      refresh()
     }, 5e3)
     $scope.$on('$destroy', () => {
       $interval.cancel(interval)
     })
 
-    this.enable = id => {
-      this.working[id] = true
-      return xo.scheduler.enable(id)
-      .finally(() => {this.working[id] = false})
-      .then(refreshSchedules)
+    const toggleState = (toggle, state) => {
+      const selectedVms = this.formData.selectedVms.slice()
+      if (toggle) {
+        const vms = filterFilter(selectHighLevelFilter(this.objects), {type: 'VM'})
+        forEach(vms, vm => {
+          if (vm.power_state === state) {
+            (selectedVms.indexOf(vm) === -1) && selectedVms.push(vm)
+          }
+        })
+        this.formData.selectedVms = selectedVms
+      } else {
+        const keptVms = []
+        for (let index in this.formData.selectedVms) {
+          if (this.formData.selectedVms[index].power_state !== state) {
+            keptVms.push(this.formData.selectedVms[index])
+          }
+        }
+        this.formData.selectedVms = keptVms
+      }
     }
-    this.disable = id => {
-      this.working[id] = true
-      return xo.scheduler.disable(id)
-      .finally(() => {this.working[id] = false})
-      .then(refreshSchedules)
+
+    this.toggleAllRunning = toggle => toggleState(toggle, 'Running')
+    this.toggleAllHalted = toggle => toggleState(toggle, 'Halted')
+
+    this.edit = schedule => {
+      const vms = filterFilter(selectHighLevelFilter(this.objects), {type: 'VM'})
+      const job = this.jobs[schedule.job]
+      const selectedVms = []
+      forEach(job.paramsVector.items[0].values, value => {
+        const vm = find(vms, vm => vm.id === value.id)
+        vm && selectedVms.push(vm)
+      })
+      const tag = job.paramsVector.items[0].values[0].tag
+      const path = job.paramsVector.items[0].values[0].path
+      const depth = job.paramsVector.items[0].values[0].depth
+      const cronPattern = schedule.cron
+
+      this.resetData()
+      this.formData.selectedVms = selectedVms
+      this.formData.tag = tag
+      this.formData.path = path
+      this.formData.depth = depth
+      this.formData.scheduleId = schedule.id
+      this.scheduleApi.setCron(cronPattern)
     }
+
+    this.save = (id, vms, path, tag, depth, cron, enabled) => {
+      if (!vms.length) {
+        notify.warning({
+          title: 'No Vms selected',
+          message: 'Choose VMs to back up'
+        })
+        return
+      }
+      const _save = (id === undefined) ? saveNew(vms, path, tag, depth, cron, enabled) : save(id, vms, path, tag, depth, cron)
+      return _save
+      .then(() => {
+        notify.info({
+          title: 'Back up',
+          message: 'Job schedule successfuly saved'
+        })
+        this.resetData()
+      })
+      .finally(() => {
+        refresh()
+      })
+    }
+
+    const save = (id, vms, path, tag, depth, cron) => {
+      const schedule = this.schedules[id]
+      const job = this.jobs[schedule.job]
+      const values = []
+      forEach(vms, vm => {
+        values.push({
+          id: vm.id,
+          path,
+          tag,
+          depth
+        })
+      })
+      job.paramsVector.items[0].values = values
+      return xo.job.set(job)
+      .then(response => {
+        if (response) {
+          return xo.schedule.set(schedule.id, undefined, cron, undefined)
+        } else {
+          notify.error({
+            title: 'Update schedule',
+            message: 'Job updating failed'
+          })
+          throw new Error('Job updating failed')
+        }
+      })
+    }
+
+    const saveNew = (vms, path, tag, depth, cron, enabled) => {
+      const values = []
+      forEach(vms, vm => {
+        values.push({
+          id: vm.id,
+          path,
+          tag,
+          depth
+        })
+      })
+      const job = {
+        type: 'call',
+        key: JOBKEY,
+        method: 'vm.rollingBackup',
+        paramsVector: {
+          type: 'crossProduct',
+          items: [
+            {
+              type: 'set',
+              values
+            }
+          ]
+        }
+      }
+      return xo.job.create(job)
+      .then(jobId => {
+        return xo.schedule.create(jobId, cron, enabled)
+      })
+    }
+
+    this.delete = schedule => {
+      let jobId = schedule.job
+      xo.schedule.delete(schedule.id)
+      .then(() => xo.job.delete(jobId))
+      .finally(() => {
+        refresh()
+      })
+    }
+
+    this.resetData = () => {
+      this.formData.allRunning = false
+      this.formData.allHalted = false
+      this.formData.selectedVms = []
+      this.formData.scheduleId = undefined
+      this.formData.tag = undefined
+      this.formData.path = undefined
+      this.formData.depth = undefined
+      this.formData.enabled = false
+      this.scheduleApi.resetData()
+    }
+
     this.collectionLength = col => Object.keys(col).length
-    this.working = {}
+    this.prettyCron = prettyCron.toString.bind(prettyCron)
+
+    if (!this.comesForEditing) {
+      refresh()
+    } else {
+      refresh()
+      .then(() => {
+        this.edit(this.schedules[this.comesForEditing])
+        delete this.comesForEditing
+      })
+    }
+    this.objects = xoApi.all
   })
 
   // A module exports its name.

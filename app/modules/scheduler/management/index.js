@@ -1,12 +1,6 @@
 import angular from 'angular'
-import assign from 'lodash.assign'
-import find from 'lodash.find'
 import forEach from 'lodash.foreach'
-import indexOf from 'lodash.indexof'
-import later from 'later'
-import moment from 'moment'
 import prettyCron from 'prettycron'
-import remove from 'lodash.remove'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
 
@@ -26,6 +20,11 @@ export default angular.module('scheduler.management', [
     })
   })
   .controller('ManagementCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
+    const mapJobKeyToState = {
+      'rollingSnapshot': 'rollingsnapshot',
+      'rollingBackup': 'backup'
+    }
+
     const refreshSchedules = () => {
       xo.schedule.getAll()
       .then(schedules => {
@@ -40,19 +39,22 @@ export default angular.module('scheduler.management', [
     this.prettyCron = prettyCron.toString.bind(prettyCron)
 
     const refreshJobs = () => {
-      xo.job.getAll()
+      return xo.job.getAll()
       .then(jobs => {
         const j = {}
         forEach(jobs, job => j[job.id] = job)
         this.jobs = j
       })
     }
-    refreshSchedules()
-    refreshJobs()
+
+    const refresh = () => {
+      return refreshJobs().then(refreshSchedules)
+    }
+
+    refresh()
 
     const interval = $interval(() => {
-      refreshSchedules()
-      refreshJobs()
+      refresh()
     }, 5e3)
     $scope.$on('$destroy', () => {
       $interval.cancel(interval)
@@ -70,6 +72,10 @@ export default angular.module('scheduler.management', [
       .finally(() => {this.working[id] = false})
       .then(refreshSchedules)
     }
+    this.resolveJobKey = schedule => {
+      return mapJobKeyToState[this.jobs[schedule.job].key]
+    }
+
     this.collectionLength = col => Object.keys(col).length
     this.working = {}
   })

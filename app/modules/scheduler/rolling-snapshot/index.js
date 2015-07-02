@@ -24,6 +24,8 @@ export default angular.module('scheduler.rollingSnapshot', [
     })
   })
   .controller('RollingSnapshotCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
+    const JOBKEY = 'rollingSnapshot'
+
     this.comesForEditing = $stateParams.id
     this.scheduleApi = {}
     this.formData = {}
@@ -32,7 +34,9 @@ export default angular.module('scheduler.rollingSnapshot', [
       return xo.schedule.getAll()
       .then(schedules => {
         const s = {}
-        forEach(schedules, schedule => s[schedule.id] = schedule)
+        forEach(schedules, schedule => {
+          this.jobs && this.jobs[schedule.job] && this.jobs[schedule.job].key === JOBKEY && (s[schedule.id] = schedule)
+        })
         this.schedules = s
       })
     }
@@ -46,9 +50,12 @@ export default angular.module('scheduler.rollingSnapshot', [
       })
     }
 
+    const refresh = () => {
+      return refreshJobs().then(refreshSchedules)
+    }
+
     const interval = $interval(() => {
-      refreshSchedules()
-      refreshJobs()
+      refresh()
     }, 5e3)
     $scope.$on('$destroy', () => {
       $interval.cancel(interval)
@@ -90,7 +97,7 @@ export default angular.module('scheduler.rollingSnapshot', [
       const depth = job.paramsVector.items[0].values[0].depth
       const cronPattern = schedule.cron
 
-      this.scheduleApi.resetData()
+      this.resetData()
       // const formData = this.formData
       this.formData.selectedVms = selectedVms
       this.formData.tag = tag
@@ -114,11 +121,10 @@ export default angular.module('scheduler.rollingSnapshot', [
           title: 'Rolling snapshot',
           message: 'Job schedule successfuly saved'
         })
-        this.scheduleApi.resetData()
+        this.resetData()
       })
       .finally(() => {
-        refreshJobs()
-        refreshSchedules()
+        refresh()
       })
     }
 
@@ -159,7 +165,7 @@ export default angular.module('scheduler.rollingSnapshot', [
       })
       const job = {
         type: 'call',
-        key: 'rollingSnapshot',
+        key: JOBKEY,
         method: 'vm.rollingSnapshot',
         paramsVector: {
           type: 'crossProduct',
@@ -182,20 +188,28 @@ export default angular.module('scheduler.rollingSnapshot', [
       xo.schedule.delete(schedule.id)
       .then(() => xo.job.delete(jobId))
       .finally(() => {
-        refreshJobs()
-        refreshSchedules()
+        refresh()
       })
+    }
+
+    this.resetData = () => {
+      this.formData.allRunning = false
+      this.formData.allHalted = false
+      this.formData.selectedVms = []
+      this.formData.scheduleId = undefined
+      this.formData.tag = undefined
+      this.formData.depth = undefined
+      this.formData.enabled = false
+      this.scheduleApi.resetData()
     }
 
     this.collectionLength = col => Object.keys(col).length
     this.prettyCron = prettyCron.toString.bind(prettyCron)
 
     if (!this.comesForEditing) {
-      refreshSchedules()
-      refreshJobs()
+      refresh()
     } else {
-      refreshJobs()
-      .then(() => refreshSchedules())
+      refresh()
       .then(() => {
         this.edit(this.schedules[this.comesForEditing])
         delete this.comesForEditing
