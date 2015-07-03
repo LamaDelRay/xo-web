@@ -3,7 +3,7 @@
     p.page-title
       i.fa.fa-download(style="color: #e25440;")
       |  Back up
-form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.formData.path, ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
+form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.sanitizePath(ctrl.backUpRootPath, ctrl.formData.mount, ctrl.formData.path), ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
   .grid
     .panel.panel-default
       .panel-heading.panel-title
@@ -16,16 +16,8 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
           .alert.alert-warning(ng-if = 'ctrl.formData.scheduleId') Modifying Back up ID {{ ctrl.formData.scheduleId }}
           .form-group
             label.control-label.col-md-2(for = 'tag') Tag
-            .col-md-8
+            .col-md-10
               input#tag.form-control(ng-model = 'ctrl.formData.tag', placeholder = 'Back-up tag', required)
-          .form-group
-            label.control-label.col-md-2(for = 'path') Path
-            .col-md-8
-              input#path.form-control(ng-model = 'ctrl.formData.path', placeholder = 'Back-up sub-path (optional)')
-          .form-group
-            .help-block.col-md-8.col-md-offset-2
-              i.fa.fa-info-circle
-              | &nbsp;The sub-path will be relative to the base back-up path configured in your appliance server.
           .form-group(ng-class = '{"has-warning": !ctrl.formData.selectedVms.length}')
             label.control-label.col-md-2(for = 'vmlist') VMs
             .col-md-8
@@ -56,12 +48,34 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                   i.fa.fa-circle-o.fa-stack-2x(ng-if = 'ctrl.formData.allHalted')
           .form-group
             label.control-label.col-md-2(for = 'depth') Depth
-            .col-md-8
+            .col-md-10
               input#depth.form-control(ng-model = 'ctrl.formData.depth', placeholder = 'How many back-ups to rollover', type = 'number', min = '1', required)
+          .form-group
+            label.control-label.col-md-2(for = 'tag') Path
+            .col-md-10
+              .input-group
+                .input-group-btn(dropdown)
+                  button#path-addon.btn.btn-default.disabled(type = 'button', tooltip = 'This base path is configurable on server-side') {{ ctrl.backUpRootPath }}
+                  button.btn.btn-default.disabled(type = 'button') /
+                  button.btn.btn-default.dropdown-toggle(type = 'button', dropdown-toggle)
+                    | {{ ctrl.formData.mount }} &nbsp;
+                    span.caret
+                  ul.dropdown-menu(role = 'menu')
+                    li.dropdown-header Choose a mount point
+                    li: a(href = '#', ng-click = 'ctrl.formData.mount = ""'): em (none)
+                    li(ng-repeat = 'mount in ctrl.backUpMounts'): a(href = '#', ng-click = 'ctrl.formData.mount = mount') {{mount}}
+                    li.divider(role = 'separator')
+                    li: a(ui-sref = 'scheduler.mount')
+                      i.fa.fa-pencil
+                      | &nbsp; Manage your mount points...
+                  button.btn.btn-default.disabled(ng-if = 'ctrl.formData.mount', type = 'button') /
+                input#path.form-control(ng-model = 'ctrl.formData.path', placeholder = 'sub-path (optional)', aria-describedby = 'path-addon')
+          .form-group
+            .col-md-10.col-md-offset-2: .well.well-sm(tooltip = 'You can edit this path just above') {{ ctrl.sanitizePath(ctrl.backUpRootPath, ctrl.formData.mount, ctrl.formData.path) }}
           .form-group(ng-if = '!ctrl.formData.scheduleId')
             label.control-label.col-md-2(for = 'enabled')
               input#enabled(ng-model = 'ctrl.formData.enabled', type = 'checkbox')
-            .help-block.col-md-8 Enable immediatly after creation
+            .help-block.col-md-10 Enable immediatly after creation
     .panel.panel-default
       .panel-heading.panel-title
         i.fa.fa-clock-o(style="color: #e25440;")

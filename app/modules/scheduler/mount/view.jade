@@ -1,0 +1,48 @@
+.grid
+  .panel.panel-default
+    p.page-title
+      i.fa.fa-puzzle-piece(style="color: #e25440;")
+      |  Mounts for backups&nbsp;
+      a.btn.btn-default(ui-sref = 'scheduler.backup')
+        i.fa.fa-level-up
+.grid
+  .panel.panel-default
+    .panel-body
+      .text-center(ng-if = '!ctrl.collectionLength(ctrl.backUpMounts)') No mounts 
+      table.table.table-hover(ng-if = 'ctrl.collectionLength(ctrl.backUpMounts)')
+        tr
+          th Path
+          th Host
+          th Share
+          th State
+          th
+        tr(ng-repeat = 'mount in ctrl.backUpMounts | orderBy:natural("path") track by mount.id')
+          td {{ mount.path }}
+          td {{ mount.host }}
+          td {{ mount.share }}
+          td
+            span(ng-if = 'mount.mounted')
+              | Mounted&nbsp;
+              button.btn.btn-warning(type = 'button', ng-click = 'ctrl.unmount(mount.id)'): i.fa.fa-chain-broken
+            span(ng-if = '!mount.mounted')
+              | Unmounted&nbsp;
+              button.btn.btn-primary(type = 'button', ng-click = 'ctrl.mount(mount.id)'): i.fa.fa-link
+          td: button.btn.btn-danger(type = 'button', ng-click = 'ctrl.removeMount(mount.id)'): i.fa.fa-trash
+      form(ng-submit = 'ctrl.addMount(ctrl.path, ctrl.host, ctrl.share)')
+        fieldset
+          legend New mount
+          .form-inline
+            .form-group
+              label Path&nbsp;
+              input.form-control(type = 'text', ng-model = 'ctrl.path', required)
+            | &nbsp;
+            .form-group
+              label Host&nbsp;
+              input.form-control(type = 'text', ng-model = 'ctrl.host', required)
+            | &nbsp;
+            .form-group
+              label Share&nbsp;
+              input.form-control(type = 'text', ng-model = 'ctrl.share', required)
+            | &nbsp;
+            button.btn.btn-primary(type = 'submit') Save
+//- pre {{ ctrl.backUpMounts }}

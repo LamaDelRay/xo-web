@@ -1,7 +1,10 @@
 import angular from 'angular'
+import filter from 'lodash.filter'
 import find from 'lodash.find'
 import forEach from 'lodash.foreach'
+import map from 'lodash.map'
 import prettyCron from 'prettycron'
+import trim from 'lodash.trim'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
 
@@ -26,6 +29,10 @@ export default angular.module('scheduler.backup', [
     this.comesForEditing = $stateParams.id
     this.scheduleApi = {}
     this.formData = {}
+
+    // FIXME
+    this.backUpMounts = ['perso', 'critical/monthly', 'critical/daily']
+    this.backUpRootPath = '/var/lib/xoa'
 
     const refreshSchedules = () => {
       return xo.schedule.getAll()
@@ -192,6 +199,8 @@ export default angular.module('scheduler.backup', [
       })
     }
 
+    this.sanitizePath = (...paths) => (paths[0] && paths[0].charAt(0) === '/' && '/' || '') + filter(map(paths, s => s && filter(map(s.split('/'), trim)).join('/'))).join('/')
+
     this.resetData = () => {
       this.formData.allRunning = false
       this.formData.allHalted = false
@@ -201,6 +210,7 @@ export default angular.module('scheduler.backup', [
       this.formData.path = undefined
       this.formData.depth = undefined
       this.formData.enabled = false
+      this.formData.mount = undefined
       this.scheduleApi.resetData()
     }
 

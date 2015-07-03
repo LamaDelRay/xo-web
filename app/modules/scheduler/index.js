@@ -12,6 +12,7 @@ later.date.localTime()
 
 import backup from './backup'
 import management from './management'
+import mount from './mount'
 import rollingSnapshot from './rolling-snapshot'
 
 import view from './view'
@@ -22,6 +23,7 @@ export default angular.module('scheduler', [
 
   backup,
   management,
+  mount,
   rollingSnapshot
 ])
   .config(function ($stateProvider) {
