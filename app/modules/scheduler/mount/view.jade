@@ -8,6 +8,9 @@
 .grid
   .panel.panel-default
     .panel-body
+      .alert.alert-info
+        i.fa.fa-info-circle
+        | &nbsp;All mount paths are taken as relative to `{{ ctrl.backUpRootPath }}`, configured on server side
       .text-center(ng-if = '!ctrl.collectionLength(ctrl.backUpMounts)') No mounts 
       table.table.table-hover(ng-if = 'ctrl.collectionLength(ctrl.backUpMounts)')
         tr
@@ -18,7 +21,9 @@
           th Error
           th
         tr(ng-repeat = 'mount in ctrl.backUpMounts | orderBy:natural("path") track by mount.id')
-          td {{ mount.path }}
+          td
+            span.text-info {{ ctrl.backUpRootPath }}
+            | /{{ mount.path }}
           td {{ mount.host }}
           td {{ mount.share }}
           td
@@ -46,5 +51,5 @@
               label Share&nbsp;
               input.form-control(type = 'text', ng-model = 'ctrl.share', required)
             | &nbsp;
-            button.btn.btn-primary(type = 'submit') Save
+            button.btn.btn-primary(type = 'submit', ng-disabled = '!ctrl.ready') Save
 //- pre {{ ctrl.backUpMounts }}

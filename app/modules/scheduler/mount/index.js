@@ -1,7 +1,11 @@
 import angular from 'angular'
+import filter from 'lodash.filter'
+import forEach from 'lodash.foreach'
+import map from 'lodash.map'
+import trim from 'lodash.trim'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
-import forEach from 'lodash.foreach'
+import size from 'lodash.size'
 
 import view from './view'
 
@@ -21,8 +25,17 @@ export default angular.module('scheduler.mount', [
   .controller('MountCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
     // FIXME
     this.increment = 0
-    this.backUpMounts = {}
-    this.backUpRootPath = '/var/lib/xoa'
+
+    this.ready = false
+
+    this.getReady = () => {
+      return xo.mount.getBackupMountPath()
+      .then(path => this.backUpRootPath = path)
+      .then(() => xo.mount.getAll())
+      .then(mounts => this.backUpMounts = mounts)
+      .then(() => this.ready = true)
+    }
+    this.getReady()
 
     const refresh = () => {
       return xo.mount.getAll()
@@ -40,13 +53,15 @@ export default angular.module('scheduler.mount', [
       $interval.cancel(interval)
     })
 
+    this.sanitizePath = (...paths) => (paths[0] && paths[0].charAt(0) === '/' && '/' || '') + filter(map(paths, s => s && filter(map(s.split('/'), trim)).join('/'))).join('/')
+
     const reset = () => this.path = this.host = this.share = undefined
-    this.addMount = (path, host, share) => xo.mount.create(path, host, share).then(reset).then(refresh)
+    this.addMount = (path, host, share) => xo.mount.create(this.sanitizePath(path), host, this.sanitizePath(share)).then(reset).then(refresh)
     this.removeMount = id => xo.mount.delete(id).then(refresh)
     this.mount = id => xo.mount.set(id, undefined, undefined, undefined, true).then(refresh)
     this.unmount = id => xo.mount.set(id, undefined, undefined, undefined, false).then(refresh)
 
-    this.collectionLength = col => Object.keys(col).length
+    this.collectionLength = col => size(col)
   })
 
   // A module exports its name.

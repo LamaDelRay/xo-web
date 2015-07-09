@@ -3,7 +3,7 @@
     p.page-title
       i.fa.fa-download(style="color: #e25440;")
       |  Back up
-form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.sanitizePath(ctrl.backUpRootPath, ctrl.formData.mount, ctrl.formData.path), ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
+form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.sanitizePath(ctrl.formData.mount, ctrl.formData.path), ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
   .grid
     .panel.panel-default
       .panel-heading.panel-title
@@ -109,7 +109,8 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
           tr
             th ID
             th Tag
-            th VMs to snapshot
+            th VMs to back-up
+            th Path
             th Depth
             th Scheduling
             th Enabled now
@@ -130,6 +131,9 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                     li(ng-repeat = 'item in ctrl.jobs[schedule.job].paramsVector.items[0].values')
                       span(ng-if = 'item.id | resolve') {{ (item.id | resolve).name_label }}
                       span(ng-if = '(item.id | resolve).$container') &nbsp;({{ ((item.id | resolve).$container | resolve).name_label }})
+            td
+              span.text-info {{ ctrl.backUpRootPath }}
+              strong /{{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].path }}
             td {{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].depth }}
             td {{ ctrl.prettyCron(schedule.cron) }}
             td.text-center

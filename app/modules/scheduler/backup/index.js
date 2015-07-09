@@ -4,6 +4,7 @@ import find from 'lodash.find'
 import forEach from 'lodash.foreach'
 import map from 'lodash.map'
 import prettyCron from 'prettycron'
+import size from 'lodash.size'
 import trim from 'lodash.trim'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
@@ -31,10 +32,6 @@ export default angular.module('scheduler.backup', [
     this.comesForEditing = $stateParams.id
     this.scheduleApi = {}
     this.formData = {}
-
-    // FIXME
-    this.backUpMounts = ['perso', 'critical/monthly', 'critical/daily']
-    this.backUpRootPath = '/var/lib/xoa'
 
     this.getReady = () => {
       return xo.mount.getBackupMountPath()
@@ -225,7 +222,7 @@ export default angular.module('scheduler.backup', [
       this.scheduleApi.resetData()
     }
 
-    this.collectionLength = col => Object.keys(col).length
+    this.collectionLength = col => size(col)
     this.prettyCron = prettyCron.toString.bind(prettyCron)
 
     if (!this.comesForEditing) {
