@@ -37,11 +37,13 @@
           td: button.btn.btn-danger(type = 'button', ng-click = 'ctrl.removeMount(mount.id)'): i.fa.fa-trash
       form(ng-submit = 'ctrl.addMount(ctrl.path, ctrl.host, ctrl.share)')
         fieldset
-          legend New mount
+          legend New NFS mount
           .form-inline
             .form-group
               label Path&nbsp;
-              input.form-control(type = 'text', ng-model = 'ctrl.path', required)
+              .input-group
+                span.input-group-addon {{ ctrl.backUpRootPath }}/
+                input.form-control(type = 'text', ng-model = 'ctrl.path', required)
             | &nbsp;
             .form-group
               label Host&nbsp;

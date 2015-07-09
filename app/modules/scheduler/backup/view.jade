@@ -2,18 +2,18 @@
   .panel.panel-default
     p.page-title
       i.fa.fa-download(style="color: #e25440;")
-      |  Back up
+      |  Backup
 form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.sanitizePath(ctrl.formData.mount, ctrl.formData.path), ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
   .grid
     .panel.panel-default
       .panel-heading.panel-title
         i.fa.xo-icon-vm(style='color: #e25440;')
-        |  VMs to back up
+        |  VMs to backup
       .panel-body.form-horizontal
         .text-center(ng-if = '!ctrl.formData'): i.fa.fa-circle-o-notch.fa-spin.fa-2x
         .container-fluid(ng-if = 'ctrl.formData')
-          .alert.alert-info(ng-if = '!ctrl.formData.scheduleId') Creating New Back up
-          .alert.alert-warning(ng-if = 'ctrl.formData.scheduleId') Modifying Back up ID {{ ctrl.formData.scheduleId }}
+          .alert.alert-info(ng-if = '!ctrl.formData.scheduleId') Creating New Backup
+          .alert.alert-warning(ng-if = 'ctrl.formData.scheduleId') Modifying Backup ID {{ ctrl.formData.scheduleId }}
           .form-group
             label.control-label.col-md-2(for = 'tag') Tag
             .col-md-10
@@ -22,7 +22,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
             label.control-label.col-md-2(for = 'vmlist') VMs
             .col-md-8
               ui-select(ng-model = 'ctrl.formData.selectedVms', multiple, close-on-select = 'false', required)
-                ui-select-match(placeholder = 'Choose VMs to back-up')
+                ui-select-match(placeholder = 'Choose VMs to backup')
                   i.xo-icon-working(ng-if="isVMWorking($item)")
                   i(class="xo-icon-{{$item.power_state | lowercase}}",ng-if="!isVMWorking($item)")
                   |  {{$item.name_label}}
@@ -49,7 +49,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
           .form-group
             label.control-label.col-md-2(for = 'depth') Depth
             .col-md-10
-              input#depth.form-control(ng-model = 'ctrl.formData.depth', placeholder = 'How many back-ups to rollover', type = 'number', min = '1', required)
+              input#depth.form-control(ng-model = 'ctrl.formData.depth', placeholder = 'How many backups to rollover', type = 'number', min = '1', required)
           .form-group
             label.control-label.col-md-2(for = 'tag') Path
             .col-md-10
@@ -109,7 +109,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
           tr
             th ID
             th Tag
-            th VMs to back-up
+            th VMs to backup
             th Path
             th Depth
             th Scheduling
