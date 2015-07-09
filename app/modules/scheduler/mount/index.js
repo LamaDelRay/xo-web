@@ -1,6 +1,7 @@
 import angular from 'angular'
 import uiBootstrap from 'angular-ui-bootstrap'
 import uiRouter from 'angular-ui-router'
+import forEach from 'lodash.foreach'
 
 import view from './view'
 
@@ -23,21 +24,27 @@ export default angular.module('scheduler.mount', [
     this.backUpMounts = {}
     this.backUpRootPath = '/var/lib/xoa'
 
-    this.reset = () => this.path = this.host = this.share = undefined
-    this.addMount = (path, host, share) => {
-      this.backUpMounts[++this.increment] = {
-        id: this.increment,
-        path,
-        host,
-        share,
-        mounted: false
-      }
-      this.reset()
+    const refresh = () => {
+      return xo.mount.getAll()
+      .then(mounts => {
+        const m = {}
+        forEach(mounts, mount => {m[mount.id] = mount})
+        this.backUpMounts = m
+      })
     }
-    this.removeMount = id => delete this.backUpMounts[id]
 
-    this.mount = id => this.backUpMounts[id].mounted = true
-    this.unmount = id => this.backUpMounts[id].mounted = false
+    refresh()
+
+    const interval = $interval(refresh, 5e3)
+    $scope.$on('$destroy', () => {
+      $interval.cancel(interval)
+    })
+
+    const reset = () => this.path = this.host = this.share = undefined
+    this.addMount = (path, host, share) => xo.mount.create(path, host, share).then(reset).then(refresh)
+    this.removeMount = id => xo.mount.delete(id).then(refresh)
+    this.mount = id => xo.mount.set(id, undefined, undefined, undefined, true).then(refresh)
+    this.unmount = id => xo.mount.set(id, undefined, undefined, undefined, false).then(refresh)
 
     this.collectionLength = col => Object.keys(col).length
   })

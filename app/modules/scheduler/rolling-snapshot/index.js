@@ -23,7 +23,7 @@ export default angular.module('scheduler.rollingSnapshot', [
       template: view
     })
   })
-  .controller('RollingSnapshotCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
+  .controller('RollingSnapshotCtrl', function ($scope, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
     const JOBKEY = 'rollingSnapshot'
 
     this.comesForEditing = $stateParams.id

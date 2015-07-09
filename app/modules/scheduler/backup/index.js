@@ -23,8 +23,10 @@ export default angular.module('scheduler.backup', [
       template: view
     })
   })
-  .controller('BackupCtrl', function ($scope, $state, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
+  .controller('BackupCtrl', function ($scope, $stateParams, $interval, xo, xoApi, notify, selectHighLevelFilter, filterFilter) {
     const JOBKEY = 'rollingBackup'
+
+    this.ready = false
 
     this.comesForEditing = $stateParams.id
     this.scheduleApi = {}
@@ -33,6 +35,15 @@ export default angular.module('scheduler.backup', [
     // FIXME
     this.backUpMounts = ['perso', 'critical/monthly', 'critical/daily']
     this.backUpRootPath = '/var/lib/xoa'
+
+    this.getReady = () => {
+      return xo.mount.getBackupMountPath()
+      .then(path => this.backUpRootPath = path)
+      .then(() => xo.mount.getAll())
+      .then(mounts => this.backUpMounts = mounts)
+      .then(() => this.ready = true)
+    }
+    this.getReady()
 
     const refreshSchedules = () => {
       return xo.schedule.getAll()

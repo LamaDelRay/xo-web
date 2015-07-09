@@ -15,6 +15,7 @@
           th Host
           th Share
           th State
+          th Error
           th
         tr(ng-repeat = 'mount in ctrl.backUpMounts | orderBy:natural("path") track by mount.id')
           td {{ mount.path }}
@@ -27,6 +28,7 @@
             span(ng-if = '!mount.mounted')
               | Unmounted&nbsp;
               button.btn.btn-primary(type = 'button', ng-click = 'ctrl.mount(mount.id)'): i.fa.fa-link
+          td: span.text-muted {{ mount.error }}
           td: button.btn.btn-danger(type = 'button', ng-click = 'ctrl.removeMount(mount.id)'): i.fa.fa-trash
       form(ng-submit = 'ctrl.addMount(ctrl.path, ctrl.host, ctrl.share)')
         fieldset

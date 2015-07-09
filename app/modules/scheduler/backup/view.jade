@@ -63,7 +63,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                   ul.dropdown-menu(role = 'menu')
                     li.dropdown-header Choose a mount point
                     li: a(href = '#', ng-click = 'ctrl.formData.mount = ""'): em (none)
-                    li(ng-repeat = 'mount in ctrl.backUpMounts'): a(href = '#', ng-click = 'ctrl.formData.mount = mount') {{mount}}
+                    li(ng-repeat = 'mount in ctrl.backUpMounts'): a(href = '#', ng-click = 'ctrl.formData.mount = mount.path') {{mount.path}}
                     li.divider(role = 'separator')
                     li: a(ui-sref = 'scheduler.mount')
                       i.fa.fa-pencil
@@ -87,7 +87,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
     .panel.panel-default
       .panel-body
         p.center
-          button.btn.btn-lg.btn-primary(type = 'submit')
+          button.btn.btn-lg.btn-primary(type = 'submit', ng-disabled = '!ctrl.ready')
             i.fa.fa-clock-o
             | &nbsp;
             i.fa.fa-arrow-right
@@ -95,7 +95,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
             i.fa.fa-database
             | &nbsp;Save&nbsp;
           | &nbsp;
-          button.btn.btn-lg.btn-default(type = 'button', ng-click = 'ctrl.resetData()')
+          button.btn.btn-lg.btn-default(type = 'button', ng-click = 'ctrl.resetData()', ng-disabled = '!ctrl.ready')
             | &nbsp;Reset&nbsp;
 .grid
     .panel.panel-default
