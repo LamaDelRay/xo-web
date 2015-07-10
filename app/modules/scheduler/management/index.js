@@ -27,11 +27,7 @@ export default angular.module('scheduler.management', [
 
     const refreshSchedules = () => {
       xo.schedule.getAll()
-      .then(schedules => {
-        const s = {}
-        forEach(schedules, schedule => s[schedule.id] = schedule)
-        this.schedules = s
-      })
+      .then(schedules => this.schedules = schedules)
       xo.scheduler.getScheduleTable()
       .then(table => this.scheduleTable = table)
     }

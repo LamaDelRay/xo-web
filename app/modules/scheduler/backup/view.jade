@@ -71,7 +71,8 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                   button.btn.btn-default.disabled(ng-if = 'ctrl.formData.mount', type = 'button') /
                 input#path.form-control(ng-model = 'ctrl.formData.path', placeholder = 'sub-path (optional)', aria-describedby = 'path-addon')
           .form-group
-            .col-md-10.col-md-offset-2: .well.well-sm(tooltip = 'You can edit this path just above') {{ ctrl.sanitizePath(ctrl.backUpRootPath, ctrl.formData.mount, ctrl.formData.path) }}
+            label.control-label.col-md-2.text-muted Preview
+            .col-md-10: .well.well-sm(tooltip = 'You can edit this path just above') {{ ctrl.sanitizePath(ctrl.backUpRootPath, ctrl.formData.mount, ctrl.formData.path) }}
           .form-group(ng-if = '!ctrl.formData.scheduleId')
             label.control-label.col-md-2(for = 'enabled')
               input#enabled(ng-model = 'ctrl.formData.enabled', type = 'checkbox')
@@ -115,7 +116,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
             th Scheduling
             th Enabled now
             th
-          tr(ng-repeat = 'schedule in ctrl.schedules track by schedule.id')
+          tr(ng-repeat = 'schedule in ctrl.schedules | orderBy:"id":true track by schedule.id')
             td {{ schedule.id }}
             td {{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].tag }}
             td

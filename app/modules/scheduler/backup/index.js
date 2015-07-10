@@ -131,7 +131,7 @@ export default angular.module('scheduler.backup', [
       return _save
       .then(() => {
         notify.info({
-          title: 'Back up',
+          title: 'Backup',
           message: 'Job schedule successfuly saved'
         })
         this.resetData()

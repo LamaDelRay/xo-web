@@ -14,44 +14,46 @@
       .text-center(ng-if = '!ctrl.collectionLength(ctrl.backUpMounts)') No mounts 
       table.table.table-hover(ng-if = 'ctrl.collectionLength(ctrl.backUpMounts)')
         tr
-          th Path
-          th Host
-          th Share
+          th Mount path
+          th Device
           th State
           th Error
           th
-        tr(ng-repeat = 'mount in ctrl.backUpMounts | orderBy:natural("path") track by mount.id')
+        tr(ng-repeat = 'mount in ctrl.backUpMounts | orderBy:["host", "share", "path"] track by mount.id')
           td
             span.text-info {{ ctrl.backUpRootPath }}
             | /{{ mount.path }}
-          td {{ mount.host }}
-          td {{ mount.share }}
+          td {{ mount.host }}:{{ mount.share }}
           td
             span(ng-if = 'mount.mounted')
-              | Mounted&nbsp;
-              button.btn.btn-warning(type = 'button', ng-click = 'ctrl.unmount(mount.id)'): i.fa.fa-chain-broken
+              span.text-success
+                | Mounted&nbsp;
+                i.fa.fa-puzzle-piece
+              button.btn.btn-warning.pull-right(type = 'button', ng-click = 'ctrl.unmount(mount.id)'): i.fa.fa-chain-broken
             span(ng-if = '!mount.mounted')
-              | Unmounted&nbsp;
-              button.btn.btn-primary(type = 'button', ng-click = 'ctrl.mount(mount.id)'): i.fa.fa-link
+              span.text-muted Unmounted&nbsp;
+              button.btn.btn-primary.pull-right(type = 'button', ng-click = 'ctrl.mount(mount.id)'): i.fa.fa-link
           td: span.text-muted {{ mount.error }}
-          td: button.btn.btn-danger(type = 'button', ng-click = 'ctrl.removeMount(mount.id)'): i.fa.fa-trash
-      form(ng-submit = 'ctrl.addMount(ctrl.path, ctrl.host, ctrl.share)')
+          td: button.btn.btn-danger.pull-right(type = 'button', ng-click = 'ctrl.removeMount(mount.id)'): i.fa.fa-trash
+      form(ng-submit = 'ctrl.addMount(ctrl.host, ctrl.share, ctrl.path)')
         fieldset
           legend New NFS mount
           .form-inline
             .form-group
-              label Path&nbsp;
+              label.sr-only Host&nbsp;
+              input.form-control(type = 'text', ng-model = 'ctrl.host', placeholder = 'host', required)
+            strong &nbsp;:&nbsp;
+            .form-group
+              label.sr-only Share&nbsp;
+              input.form-control(type = 'text', ng-model = 'ctrl.share', placeholder = 'share', required)
+            | &nbsp;
+            .form-group
+              label Mount path&nbsp;
               .input-group
                 span.input-group-addon {{ ctrl.backUpRootPath }}/
-                input.form-control(type = 'text', ng-model = 'ctrl.path', required)
+                input.form-control(type = 'text', ng-model = 'ctrl.path', placeholder = '(optional)')
             | &nbsp;
-            .form-group
-              label Host&nbsp;
-              input.form-control(type = 'text', ng-model = 'ctrl.host', required)
-            | &nbsp;
-            .form-group
-              label Share&nbsp;
-              input.form-control(type = 'text', ng-model = 'ctrl.share', required)
-            | &nbsp;
-            button.btn.btn-primary(type = 'submit', ng-disabled = '!ctrl.ready') Save
+            button.btn.btn-primary.pull-right(type = 'submit', ng-disabled = '!ctrl.ready')
+              | Save&nbsp;
+              i.fa.fa-floppy-o
 //- pre {{ ctrl.backUpMounts }}

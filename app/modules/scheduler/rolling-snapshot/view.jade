@@ -2,7 +2,7 @@
   .panel.panel-default
     p.page-title
       i.fa.fa-camera-retro(style="color: #e25440;")
-      |  Rolling VM Snapshots
+      |  Rolling snapshots
 form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms, ctrl.formData.tag, ctrl.formData.depth, ctrl.formData.cronPattern, ctrl.formData.enabled)')
   .grid
     .panel.panel-default
@@ -16,7 +16,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
           .alert.alert-warning(ng-if = 'ctrl.formData.scheduleId') Modifying Rolling Snapshot ID {{ ctrl.formData.scheduleId }}
           .form-group
             label.control-label.col-md-2(for = 'tag') Tag
-            .col-md-8
+            .col-md-10
               input#tag.form-control(ng-model = 'ctrl.formData.tag', placeholder = 'Rolling snapshot tag', required)
           .form-group(ng-class = '{"has-warning": !ctrl.formData.selectedVms.length}')
             label.control-label.col-md-2(for = 'vmlist') VMs
@@ -48,7 +48,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
                   i.fa.fa-circle-o.fa-stack-2x(ng-if = 'ctrl.formData.allHalted')
           .form-group
             label.control-label.col-md-2(for = 'depth') Depth
-            .col-md-8
+            .col-md-10
               input#depth.form-control(ng-model = 'ctrl.formData.depth', placeholder = 'How many snapshots to rollover', type = 'number', min = '1', required)
           .form-group(ng-if = '!ctrl.formData.scheduleId')
             label.control-label.col-md-2(for = 'enabled')
@@ -92,7 +92,7 @@ form(ng-submit = 'ctrl.save(ctrl.formData.scheduleId, ctrl.formData.selectedVms,
             th Scheduling
             th Enabled now
             th
-          tr(ng-repeat = 'schedule in ctrl.schedules track by schedule.id')
+          tr(ng-repeat = 'schedule in ctrl.schedules | orderBy:"id":true track by schedule.id')
             td {{ schedule.id }}
             td {{ ctrl.jobs[schedule.job].paramsVector.items[0].values[0].tag }}
             td

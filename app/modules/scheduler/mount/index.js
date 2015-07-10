@@ -56,7 +56,7 @@ export default angular.module('scheduler.mount', [
     this.sanitizePath = (...paths) => (paths[0] && paths[0].charAt(0) === '/' && '/' || '') + filter(map(paths, s => s && filter(map(s.split('/'), trim)).join('/'))).join('/')
 
     const reset = () => this.path = this.host = this.share = undefined
-    this.addMount = (path, host, share) => xo.mount.create(this.sanitizePath(path), host, this.sanitizePath(share)).then(reset).then(refresh)
+    this.addMount = (host, share, path) => xo.mount.create(this.sanitizePath(path), host, this.sanitizePath(share)).then(reset).then(refresh)
     this.removeMount = id => xo.mount.delete(id).then(refresh)
     this.mount = id => xo.mount.set(id, undefined, undefined, undefined, true).then(refresh)
     this.unmount = id => xo.mount.set(id, undefined, undefined, undefined, false).then(refresh)
